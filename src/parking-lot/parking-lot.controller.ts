@@ -20,6 +20,11 @@ export class ParkingLotController {
 
   @Post()
   create(@Body() dto: CreateParkingLotDto, @Request() req) {
+    const adminId = req.user?.userId;
+
+    if (!adminId) {
+      throw new Error('Token inválido: adminId não encontrado');
+    }
     return this.parkingLotService.create(dto, req.user.userId);
   }
 

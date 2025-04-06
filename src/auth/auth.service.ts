@@ -19,10 +19,11 @@ export class AuthService {
     if (!admin || !(await bcrypt.compare(dto.password, admin.password))) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
-
+    
     const payload = { sub: admin.id, email: admin.email, role: admin.role };
     return {
       access_token: this.jwt.sign(payload),
+      payload,
     };
   }
 

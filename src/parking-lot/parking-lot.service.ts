@@ -15,6 +15,17 @@ export class ParkingLotService {
     if (!dto.name || dto.name.trim() === '') {
       throw new BadRequestException('name is required.');
     }
+
+    const admin = await this.prisma.admin.findUnique({ where: { id: adminId } });
+
+    const nameExists = await this.prisma.parkingLot.findFirst({
+      where: { name: dto.name },
+    });
+
+    if (!admin || nameExists) {
+      throw new NotFoundException('Error creating parking lot, admin not found or name already exists.');
+    }
+
     try {
       return await this.prisma.parkingLot.create({
         data: {
@@ -38,7 +49,7 @@ export class ParkingLotService {
     try {
       const parking = await this.prisma.parkingLot.findUnique({ where: { id } });
   
-      if (!parking) {
+      if (!parking ) {
         throw new NotFoundException('Parking lot not found.');
       }
   
@@ -84,7 +95,7 @@ export class ParkingLotService {
     if (!dto.name || dto.name.trim() === '') {
       throw new BadRequestException('name is required.');
     }
-
+    
     try {
       return await this.prisma.parkingLot.update({
         where: { id },

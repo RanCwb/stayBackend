@@ -6,14 +6,16 @@ import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { ParkingLotModule } from './parking-lot/parking-lot.module';
+import { SpotModule } from './spot/spot.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // ← ESSENCIAL
+    ConfigModule.forRoot({ isGlobal: true }), 
     PrismaModule,
     AdminModule,
     AuthModule,
     ParkingLotModule,
+    SpotModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -23,23 +23,33 @@ model Admin {
 }
 
 model ParkingLot {
-  id           String      @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
   address      String
   pricePerHour Float
   adminId      String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  cars         Car[]
-  admin        Admin       @relation(fields: [adminId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  admin        Admin     @relation(fields: [adminId], references: [id])
+  spots        Spot[]
 }
 
-model Car {
-  id           String      @id @default(uuid())
-  plate        String
-  entryTime    DateTime
-  exitTime     DateTime?
-  totalAmount  Float?
+model Spot {
+  id           String    @id @default(uuid())
+  number       String
+  isOccupied   Boolean   @default(false)
   parkingLotId String
-  parkingLot   ParkingLot  @relation(fields: [parkingLotId], references: [id])
+  parkingLot   ParkingLot @relation(fields: [parkingLotId], references: [id])
+  entries      CarEntry[]
+}
+
+model CarEntry {
+  id         String   @id @default(uuid())
+  plate      String
+  entryTime  DateTime?
+  exitTime   DateTime?
+  totalAmount Float?
+  spotId     String
+  spot       Spot     @relation(fields: [spotId], references: [id])
 }
