@@ -2,7 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateCarEntryDto, CreateSpotDto } from './dto/create-spot.dto';
 import { UpdateSpotDto } from './dto/update-spot.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
+import { calculateDuration } from 'src/utils/calculateDuration';
 
 @Injectable()
 export class SpotService {
@@ -36,6 +36,92 @@ export class SpotService {
       throw new Error('error creating spot.');
     }
   }
+
+
+  async removeCarFromSpot(spotId: string) {
+    if (!spotId) {
+      throw new HttpException('spotId is required.', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      // Fetch the spot with its related parking lot and active car entry
+      const spot = await this.prisma.spot.findUnique({
+        where: { id: spotId },
+        include: {
+          parkingLot: true,
+          entries: {
+            where: {
+              exitTime: null, // Only get active car entry
+            },
+            orderBy: {
+              entryTime: 'desc',
+            },
+            take: 1,
+          },
+        },
+      });
+
+      if (!spot || !spot.entries.length) {
+        throw new HttpException('No active car found in this spot.', HttpStatus.NOT_FOUND);
+      }
+
+      const activeEntry = spot.entries[0];
+      const exitTime = new Date();
+      const entryTime = new Date(activeEntry.entryTime);
+
+      // Validate that entryTime is not in the future
+      if (entryTime > exitTime) {
+        throw new HttpException('Entry time is in the future.', HttpStatus.BAD_REQUEST);
+      }
+
+      // Calculate duration
+      const diffMs = exitTime.getTime() - entryTime.getTime();
+      const totalSeconds = Math.floor(diffMs / 1000);
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      const totalHours = totalMinutes / 60;
+
+      // Calculate payment
+      const pricePerHour = spot.parkingLot.pricePerHour;
+      const totalAmount = parseFloat((totalHours * pricePerHour).toFixed(2));
+
+      // Update the car entry with exitTime and totalAmount
+      const updatedEntry = await this.prisma.carEntry.update({
+        where: { id: activeEntry.id },
+        data: {
+          exitTime: exitTime,
+          totalAmount: totalAmount,
+        },
+      });
+
+      // Set spot as unoccupied
+      const updatedSpot = await this.prisma.spot.update({
+        where: { id: spotId },
+        data: {
+          isOccupied: false,
+        },
+      });
+
+      return {
+        message: 'Car successfully removed from spot.',
+        duration: {
+          hours: Math.floor(totalHours),
+          minutes: totalMinutes % 60,
+          seconds: totalSeconds % 60,
+          formatted: `${Math.floor(totalHours)}h ${totalMinutes % 60}min ${totalSeconds % 60}s`,
+        },
+        total: `$${totalAmount.toFixed(2)}`,
+        carEntry: updatedEntry,
+        updatedSpot: updatedSpot,
+      };
+    } catch (error) {
+      console.error('[SpotService - removeCarFromSpot]', error);
+      throw new HttpException(
+        'Error while removing car from spot.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  
 
   async setCarInSpot(spotId: string, plate: string, carDto: CreateCarEntryDto) {
     try {

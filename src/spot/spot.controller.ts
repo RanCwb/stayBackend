@@ -31,9 +31,7 @@ export class SpotController {
     const { spotId, plate, entryTime } = body;
 
     if (!spotId || !plate || !entryTime) {
-      throw new BadRequestException(
-        'spotId, plate and entryTime are required',
-      );
+      throw new BadRequestException('spotId, plate and entryTime are required');
     }
 
     return this.spotService.setCarInSpot(spotId, plate, {
@@ -53,13 +51,9 @@ export class SpotController {
     return this.spotService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSpotDto: UpdateSpotDto) {
-    return this.spotService.update(+id, updateSpotDto);
-  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.spotService.remove(+id);
+  @Patch(':id')
+  removeCarFromSpot(@Param('id') id: string) {
+    return this.spotService.removeCarFromSpot(id);
   }
 }
