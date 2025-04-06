@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  ADMIN   // Você, o admin master
+  USER    // Donos de estacionamentos
+}
+
+model Admin {
+  id        String      @id @default(uuid())
+  email     String      @unique
+  password  String
+  role      AdminRole   @default(USER)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  parkings  ParkingLot[]
+}
+
+model ParkingLot {
+  id           String      @id @default(uuid())
+  name         String
+  address      String
+  pricePerHour Float
+  adminId      String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  cars         Car[]
+  admin        Admin       @relation(fields: [adminId], references: [id])
+}
+
+model Car {
+  id           String      @id @default(uuid())
+  plate        String
+  entryTime    DateTime
+  exitTime     DateTime?
+  totalAmount  Float?
+  parkingLotId String
+  parkingLot   ParkingLot  @relation(fields: [parkingLotId], references: [id])
+}
