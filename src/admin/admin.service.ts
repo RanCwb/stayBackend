@@ -20,26 +20,31 @@ export class AdminService {
     const hashed = await bcrypt.hash(dto.password, 10);
     const emailExists = await this.prisma.admin.findUnique({
       where: { email: dto.email },
-    })
+    });
 
     if (emailExists) {
       throw new UnauthorizedException('Email already exists.');
     }
 
     try {
-      const admin = await this.prisma.admin.create({
+      const user = await this.prisma.admin.create({
         data: {
+          name: dto.name,
+          phone: dto.phone,
           email: dto.email,
           password: hashed,
           role: dto.role,
         },
       });
+
+      const { password, ...cleanedUser } = user;
+
       const token = this.authService.generateToken({
-        sub: admin.id,
-        email: admin.email,
-        role: admin.role,
+        sub: user.id,
+        email: user.email,
+        role: user.role,
       });
-      return { admin, token };
+      return { provider: cleanedUser, token };
     } catch (error) {
       console.error('[AdminService]', error);
       throw new InternalServerErrorException('error creating admin.');

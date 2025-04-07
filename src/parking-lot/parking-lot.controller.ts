@@ -9,7 +9,7 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { ParkingLotService } from './parking-lot.service';
 import { CreateParkingLotDto } from './dto/parking-lot.dto';
 

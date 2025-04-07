@@ -11,8 +11,7 @@ import {
 } from '@nestjs/common';
 import { SpotService } from './spot.service';
 import { CreateSpotDto } from './dto/create-spot.dto';
-import { UpdateSpotDto } from './dto/update-spot.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('spot')
 @UseGuards(JwtAuthGuard)

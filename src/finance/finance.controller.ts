@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { FinanceService } from './finance.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('parking-lot/:id/finance')
 @UseGuards(JwtAuthGuard)

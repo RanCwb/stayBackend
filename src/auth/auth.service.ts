@@ -27,19 +27,16 @@ export class AuthService {
     };
   }
 
-  async checkExpiredToken(token: string) {
+
+  async checkExpiredToken(token: string): Promise<boolean> {
     try {
-      const payload = this.jwt.decode(token);
-      const { exp } = payload;
-      const dateNow = Date.now() / 1000;
-      if (exp < dateNow) {
-        return false;
-      }
+      this.jwt.verify(token); //verify token
       return true;
     } catch (error) {
       return false;
     }
   }
+
 
   generateToken(payload: { sub: string; email: string; role: string }) {
     return {

@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 
@@ -9,5 +9,11 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Get('check-token')
+  async checkToken(@Query('token') token: string) {
+    const valid = await this.authService.checkExpiredToken(token);
+    return { valid };
   }
 }
